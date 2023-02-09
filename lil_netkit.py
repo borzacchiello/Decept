@@ -98,7 +98,7 @@ class lil_netkit():
             self.client_buffer = SSHClientBuffer(client_channel,server_channel)
 
     def disable_echo(self):
-        print "DISABLEING ECHO"
+        print("DISABLEING ECHO")
         self.client_buffer.disable_echo()
 
     def enable_echo(self):
@@ -116,7 +116,7 @@ class lil_netkit():
                 return message
 
             if DEBUG:
-                print "FILTER_RULE: %s" % str(filter_rule)
+                print("FILTER_RULE: %s" % str(filter_rule))
             good = False
 
             # case: "" => always execute
@@ -124,28 +124,28 @@ class lil_netkit():
                 for action in filter_rule[1]:
                     try:
                         if DEBUG:
-                            print action
+                            print(action)
                         ret = action(message)
                         if not ret:
                             if DEBUG:
-                                print "Couldn't apply action:%s" %(str(action))
+                                print("Couldn't apply action:%s" %(str(action)))
                     except Exception as e:
                         try:
                             action()
                         except:
                             pass
                         if DEBUG:
-                            print str(e)
+                            print(e)
                 continue
       
             # case: [1,2,3] => only execute if parser match 
             for i in range(0,len(tmp_split)):     
                 
                 if DEBUG: 
-                    #print "TMPSPLIT == %s" % repr(tmp_split)
-                    print type(tmp_split)
-                    print "TMP[%d]:%s ~= %s??" % (i,tmp_split[i],filter_rule[0][i])
-                    print filter_rule[0]
+                    #print("TMPSPLIT == %s" % repr(tmp_split))
+                    print(type(tmp_split))
+                    print("TMP[%d]:%s ~= %s??" % (i,tmp_split[i],filter_rule[0][i]))
+                    print(filter_rule[0])
             
                 if tmp_split[i].find(filter_rule[0][i]) != 0:
                     # no match, try next filter_rule
@@ -157,17 +157,17 @@ class lil_netkit():
            
             if not good:
                 if DEBUG:
-                    print "no good"
+                    print("no good")
                 continue
 
             for action in filter_rule[1]: 
                 if DEBUG:
-                    print "APPLYING ACTION:%s" % str(action)
+                    print("APPLYING ACTION:%s" % str(action))
                 try:
                     ret = action(message)
                     if not ret:
                         if DEBUG:
-                            print "Couldn't apply action:%s" %(str(action))
+                            print("Couldn't apply action:%s" %(str(action)))
                         continue
                     
                 except Exception as e:
@@ -175,24 +175,24 @@ class lil_netkit():
 
         if ret:
             if DEBUG:
-                print ret
+                print(ret)
             return ret
         else:
             return message
                 
              
     def inbound_filter(self,message):
-            print GREEN
-            print "INbound filter on message: %s" % message
-            print CLEAR
+            print(GREEN)
+            print("INbound filter on message: %s" % message)
+            print(CLEAR)
             return self.directional_filter(self.in_filter_list,message)
 
     def outbound_filter(self,message):
             ret = self.client_buffer.take_input_action(message)
             if ret:
-                print GREEN
-                print "Outbound filter on message: %s" % ret
-                print CLEAR
+                print(GREEN)
+                print("Outbound filter on message: %s" % ret)
+                print(CLEAR)
                 return self.directional_filter(self.out_filter_list,ret)
             return []
              
@@ -277,7 +277,7 @@ class SSHClientBuffer(object):
 
     def display_client_buffer(self,force=False):
         buf = ""
-        #print "CLIENT SENDING:%s" %repr(self.client_buffer)
+        #print("CLIENT SENDING:%s" %repr(self.client_buffer))
         self.client.send(''.join(self.client_buffer))
         # for situations (tab) where we don't 
         # want to ignore the command we just sent
@@ -303,7 +303,7 @@ class SSHClientBuffer(object):
 
     def debug_output(self,string):
         if self.debug:
-            print "[?.?] Debug: %s" % string 
+            print("[?.?] Debug: %s" % string)
 
     # for when \t or arrows are in play
     # and we expect an immediate response
@@ -386,7 +386,7 @@ class SSHClientBuffer(object):
 
             self.previous_byte = byte
         
-        #print "Action Ret: %s" % str(ret)
+        #print"Action Ret: %s" % str(ret))
         if len(ret) > 1:
             buf = ""
             for i in ret:
@@ -441,7 +441,7 @@ class SSHClientBuffer(object):
         
 
     def passthrough(self,byte):
-        #print "PASSTHFOUGH: %s" % repr(byte)
+        #print("PASSTHFOUGH: %s" % repr(byte))
         self.server.send(byte)
         self.client.send(byte)
 #################################
@@ -458,10 +458,10 @@ class SSHClientBuffer(object):
         elif len(self.client_buffer) and self.arrow_flag:
             self.arrow_flag = False
             ret = self.get_server_response(self.timeout,increase_timeout=False)         
-            #print "ret: %s" % repr(ret)
+            #print("ret: %s" % repr(ret))
             self.server.send("\x03")
             ret = self.get_server_response(self.timeout,increase_timeout=False)         
-            #print "ret: %s" % repr(ret)
+            #print("ret: %s" % repr(ret))
             tmp = ''.join(self.client_buffer[:]) + "\r"
             self.client_buffer = []
             self.cursor_index = 0
@@ -491,7 +491,7 @@ class SSHClientBuffer(object):
 
         # Case 1: No completion was found
         if buff == tmp + "\x07" or buff == tmp + "\x07\x07": 
-            #print "path2"
+            #print("path2")
             self.server.send("\x03") # ctrl_c to clear out the server's buffer
             # ignore the ctrl_c response
             ret = " "
@@ -504,7 +504,7 @@ class SSHClientBuffer(object):
             
         # Case 2: >1 completion was found
         elif buff.find(tmp + "\x07") == 0:
-            #print "path3"
+            #print("path3")
             # need to strip out extraineious output buffers
             # - Everything before "\x07"
             #resp = self.get_server_response(self.timeout,increase_timeout=False)         
@@ -527,7 +527,7 @@ class SSHClientBuffer(object):
             self.client.send(message_body)
             #! filtering for newline/etc
             if "--More--" in buff:
-                #print "Found More"
+                #print("Found More")
                 self.client.send("--More--")
                 tmp = self.more_handler()
                 if tmp:
@@ -543,7 +543,7 @@ class SSHClientBuffer(object):
             self.send_server_immediate("\x7f" * len(self.client_buffer)) 
         else:
             # case 3: Valid Completion was found
-            #print "path1"
+            #print("path1")
             try:
                 self.previous_byte = self.client_buffer[-1]
             except:
@@ -718,13 +718,13 @@ class CiscoSSHClientBuffer(SSHClientBuffer):
             self.client.send(tmp)
 
     def more_handler(self):
-        #print "ENTERING MORE HANDLER"
+        #print("ENTERING MORE HANDLER")
         tmp = self.get_client_input()
         self.send_server_immediate(tmp) 
 
         resp = self.get_server_response(self.timeout,increase_timeout=False)         
         self.client.send(resp)
-        #print repr(resp)
+        #print(repr(resp))
 
         if "--More--" in resp:    
             self.more_handler()
@@ -740,16 +740,16 @@ class CiscoSSHClientBuffer(SSHClientBuffer):
             tmp = self.get_server_response(self.timeout,increase_timeout=False)         
             resp+=tmp
             if DEBUG:
-                print "RESPONSE TO ?: %s" % repr(resp)
+                print("RESPONSE TO ?: %s" % repr(resp))
         
 
         tmp = resp.find("\r\n")
         if DEBUG:
-            print "sendint to cli:%s" % repr(resp[tmp:])
+            print("sendint to cli:%s" % repr(resp[tmp:]))
         self.client.send(resp[tmp:]) # ignoring the echoing back
         last_line = resp.split("\r\n")[-1]
         if DEBUG:
-            print "last_line : %s" % repr(last_line)
+            print("last_line : %s" % repr(last_line))
 
         if "--More--" in last_line:    
             self.more_handler()
@@ -763,8 +763,8 @@ class CiscoSSHClientBuffer(SSHClientBuffer):
                 resp_cmd = last_line.split("#")[1]
                 if len(self.client_buffer):
                     self.client_buffer = list(resp_cmd)
-                    #print "SETTING SELF TO %s " % repr(resp_cmd)
-                    #print "SETTING backspaces TO %s " % repr(a+b)
+                    #print("SETTING SELF TO %s " % repr(resp_cmd))
+                    #print("SETTING backspaces TO %s " % repr(a+b))
                     self.clear_client_buffer_display(till_cursor=False)
                     self.client.send(resp_cmd)
                     self.cursor_index = len(self.client_buffer)
@@ -774,15 +774,15 @@ class CiscoSSHClientBuffer(SSHClientBuffer):
                 resp_cmd = last_line.split(">")[1]
                 if len(self.client_buffer):
                     self.client_buffer = list(resp_cmd)
-                    #print "SETTING SELF TO %s " % repr(resp_cmd)
-                    #print "SETTING backspaces TO %s " % repr(a+b)
+                    #print("SETTING SELF TO %s " % repr(resp_cmd))
+                    #print("SETTING backspaces TO %s " % repr(a+b))
                     self.clear_client_buffer_display(till_cursor=False)
                     self.client.send(resp_cmd)
                     self.cursor_index = len(self.client_buffer)
                     
              
 
-        #print "CURR CLIE: %s" % self.client_buffer
+        #print("CURR CLIE: %s" % self.client_buffer)
     
     # With Cisco tab complete, >1 and 0 both just echo
     # prompt and cli_buff back (e.g. cli>x )
@@ -801,14 +801,14 @@ class CiscoSSHClientBuffer(SSHClientBuffer):
 
         tmp = ''.join(self.client_buffer)
         if DEBUG:
-            print "TMP: %s" % repr(tmp)
-            print repr(buff)
+            print("TMP: %s" % repr(tmp))
+            print(repr(buff))
 
         # Case 1: No completion was found or >1 completion
         try:
             if (buff.split(">")[1] == tmp) or (buff.split("#")[1] == tmp): 
                 if DEBUG:
-                    print "path2"
+                    print("path2")
                 self.client.send("\x08" * (len(filter(self.ascii_filter,self.client_buffer))))
                 self.client.send("\x07")
                 self.client.send(tmp)
@@ -818,7 +818,7 @@ class CiscoSSHClientBuffer(SSHClientBuffer):
         except:
             # case 3: Valid Completion was found
             if DEBUG:
-                print "path1"
+                print("path1")
             self.cursor_index = len(self.client_buffer)
 
             # to clear out both buffers
@@ -833,7 +833,7 @@ class CiscoSSHClientBuffer(SSHClientBuffer):
         
             self.client.send(buff)
             if DEBUG:
-                print repr(buff)
+                print(repr(buff))
             # in order to find where the completion is located accurately,
             # search from left, discard first instance of client buffer
             # e.g. 'en\r\nasig1-oob1>enable '
@@ -842,7 +842,7 @@ class CiscoSSHClientBuffer(SSHClientBuffer):
             self.cursor_index = len(self.client_buffer)
     
             if DEBUG:
-                print "Client Response: %s" % ''.join(self.client_buffer)
+                print("Client Response: %s" % ''.join(self.client_buffer))
 
 
     def set_hijack_flag(self):
@@ -875,10 +875,10 @@ class CiscoSSHClientBuffer(SSHClientBuffer):
         elif len(self.client_buffer) and self.arrow_flag:
             self.arrow_flag = False
             ret = self.get_server_response(self.timeout,increase_timeout=False)         
-            #print "ret: %s" % repr(ret)
+            #print("ret: %s" % repr(ret))
             self.server.send("\x03")
             ret = self.get_server_response(self.timeout,increase_timeout=False)         
-            #print "ret: %s" % repr(ret)
+            #print("ret: %s" % repr(ret))
             tmp = ''.join(self.client_buffer[:]) + "\r"
             self.client_buffer = []
             self.cursor_index = 0

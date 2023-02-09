@@ -1,4 +1,11 @@
 #!/usr/bin/env python
-import decept
+import sys
+import os
 
+scriptpath = os.path.realpath(
+    os.path.dirname(os.path.abspath(__file__)))
+sys.path.append(
+    os.path.join(scriptpath, ".."))
+
+import decept
 decept.main()

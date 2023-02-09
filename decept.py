@@ -333,7 +333,7 @@ class DeceptProxy():
             return ret_socket
 
         elif match(r'([0-9A-Fa-f]{0,4}:?)(:[0-9A-Fa-f]{1,4}:?)+',host) and host.find("::") == host.rfind("::"):
-            #print repr(host)
+            print(repr(host))
             s_fam = socket.AF_INET6 
         
         else:
@@ -485,7 +485,7 @@ class DeceptProxy():
             
             ### Set up our EBPF prog #### def create_ebpf_filter(ip,port,proto=""):
             self.ebpf,self.b = create_ebpf_filter(self.lhost,self.lport) 
-            #print "[^_^] ebpf: %s\n%s" % (repr(self.ebpf), self.b)
+            print("[^_^] ebpf: %s\n%s" % (repr(self.ebpf), self.b))
             # SO_ATTACH_FILTER == 26
             self.pcap_sock.setsockopt(socket.SOL_SOCKET, 26, self.ebpf) 
             self.pcap_sock.bind((self.pcap_interface,0))
@@ -635,7 +635,7 @@ class DeceptProxy():
                 csock,addr = self.server_socket.accept()
                 
 
-                #print out conn info
+                # print out conn info
                 if addr:
                     ts = datetime.now().strftime("%H:%M:%S.%f")
                     output("[>.>] %s Received Connection from %s" % (ts,str(addr)),GREEN,self.output_lock) 
@@ -925,7 +925,7 @@ class DeceptProxy():
 
                     
                     #remote_cert = schro_remote.getpeercert()
-                    #print remote_cert
+                    #print(remote_cert)
 
                 except ssl.SSLError as e:
                     output("[x.x] Unable to do SSL remote. Did you send a non-SSL request?",YELLOW, plock)
@@ -1340,7 +1340,7 @@ class DeceptProxy():
                 #output("got stuff!",GREEN)
                 packlen = len(packet)
                 
-                #print "Packlen: %d" % packlen
+                #print("Packlen: %d" % packlen)
                 pcap_record = pcap_record_hdr(packlen)
 
                 if self.snaplen < packlen:
@@ -1351,10 +1351,10 @@ class DeceptProxy():
                 # write headers for packet
                 packet_header = pcap_record.get_byte_array()
                 pcap_fd.write(packet_header)
-                #print "writing! %s " % packet_header
+                #print("writing! %s " % packet_header)
                 # write packet up to SNAPLEN
                 pcap_fd.write(packet[0:self.snaplen])
-                #print "writing! %s " % repr(packet[0:self.snaplen])
+                #print("writing! %s " % repr(packet[0:self.snaplen]))
 
             except Exception as e:
                 #print(e)
@@ -1607,9 +1607,8 @@ def hexdump(src,color,length=16):
         return
 
     result=[]
-    digits = 4 if isinstance(src,unicode) else 2
-    for i in xrange(0,len(src),length):
-        
+    digits = 4 if isinstance(src,str) else 2
+    for i in range(0,len(src),length):
         s=src[i:i+length]
         hexa = b' '.join(["%0*x" %(digits,ord(x)) for x in s]) 
 
@@ -2085,7 +2084,7 @@ def pcap_record_hdr(packet_len):
 # Takes a string of numbers, seperated via commas
 # or by hyphens, and generates an appropriate list of
 # numbers from it.
-# e.g. str("1,2,3-6")  => list([1,2,xrange(3,7)])
+# e.g. str("1,2,3-6")  => list([1,2,range(3,7)])
 #
 # If flattenList=True, will return a list of distinct elements
 #
@@ -2104,20 +2103,20 @@ def validateNumberRange(inputStr, flattenList=False):
                 intRange = num.split('-')
                 # Invalid x-y-z
                 if len(intRange) > 2:
-                    #print "Invalid range given"
+                    #print("Invalid range given")
                     return None
                 try:
                     if not flattenList:
                         # Append iterator with bounds = intRange
-                        retList.append(xrange(int(intRange[0]),int(intRange[1])+1))
+                        retList.append(range(int(intRange[0]),int(intRange[1])+1))
                     else:
                         # Append individual elements
                         retList.extend(range(int(intRange[0]),int(intRange[1])+1))
                 except TypeError:
-                    #print "Invalid range given"
+                    #print("Invalid range given")
                     return None
             else:
-                #print "Invalid number given"
+                #print("Invalid number given")
                 return None
     # All elements in the range are valid integers or integer ranges
     if flattenList:
